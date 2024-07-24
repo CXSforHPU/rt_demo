@@ -1,0 +1,48 @@
+{
+    "configurations": [
+        {
+            "name": "rt-thread",
+            "defines": [
+                "RT_USING_LIBC",
+                "RT_USING_NEWLIBC",
+                "STM32F407xx",
+                "USE_HAL_DRIVER",
+                "_POSIX_C_SOURCE=1",
+                "__RTTHREAD__"
+            ],
+            "intelliSenseMode": "gcc-arm",
+            "compilerPath": "E:/rtt/env-windows/tools/gnu_gcc/arm_gcc/mingw/bin/arm-none-eabi-gcc",
+            "cStandard": "c99",
+            "cppStandard": "c++11",
+            "compileCommands": "build/compile_commands.json",
+            "includePath": [
+                "applications",
+                "rt-thread\\components\\libc\\compilers\\common\\include",
+                "rt-thread\\components\\libc\\compilers\\newlib",
+                "rt-thread\\components\\drivers\\include",
+                "board",
+                "board\\CubeMX_Config\\Inc",
+                "board\\ports",
+                "libraries\\HAL_Drivers\\drivers",
+                "libraries\\HAL_Drivers\\drivers\\config",
+                "libraries\\HAL_Drivers",
+                "libraries\\HAL_Drivers\\CMSIS\\Include",
+                "rt-thread\\components\\dfs\\dfs_v1\\include",
+                "rt-thread\\components\\dfs\\dfs_v1\\filesystems\\devfs",
+                "rt-thread\\components\\finsh",
+                ".",
+                "rt-thread\\include",
+                "packages\\kernel_samples-latest\\en",
+                "rt-thread\\libcpu\\arm\\common",
+                "rt-thread\\libcpu\\arm\\cortex-m4",
+                "libraries\\STM32F4xx_HAL\\STM32F4xx_HAL_Driver\\Inc",
+                "libraries\\STM32F4xx_HAL\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+                "rt-thread\\components\\libc\\posix\\io\\epoll",
+                "rt-thread\\components\\libc\\posix\\io\\eventfd",
+                "rt-thread\\components\\libc\\posix\\io\\poll",
+                "rt-thread\\components\\libc\\posix\\ipc"
+            ]
+        }
+    ],
+    "version": 4
+}
