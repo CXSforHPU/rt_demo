@@ -1,5 +1,25 @@
 [
  {
+  "name": "RW007",
+  "path": "/packages/iot/WiFi/rw007",
+  "ver": "v2.1.0"
+ },
+ {
+  "name": "ICM20608",
+  "path": "/packages/peripherals/sensors/icm20608",
+  "ver": "latest"
+ },
+ {
+  "name": "I2C_TOOLS",
+  "path": "/packages/peripherals/i2c-tools",
+  "ver": "latest"
+ },
+ {
+  "name": "BEEP",
+  "path": "/packages/peripherals/beep",
+  "ver": "v1.1.0"
+ },
+ {
   "name": "KERNEL_SAMPLES",
   "path": "/packages/misc/samples/kernel_samples",
   "ver": "latest"

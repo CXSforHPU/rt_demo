@@ -1,5 +1,10 @@
 {
     "files.associations": {
-        "rtthread.h": "c"
+        "rtthread.h": "c",
+        "rtdevice.h": "c",
+        "icm20608.h": "c",
+        "drv_gpio.h": "c",
+        "i2c-bit-ops.h": "c",
+        "ulog.h": "c"
     }
 }
