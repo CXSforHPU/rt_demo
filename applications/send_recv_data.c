@@ -1,163 +1,168 @@
-#include <make_data.h>
 #include <rtthread.h>
+#include <sys/socket.h> /* 使用BSD socket，需要包含socket.h头文件 */
+#include <netdb.h>
 #include <string.h>
-#include <webclient.h>
-#include <cJSON.h>
+#include <finsh.h>
 
-#define THREAD_SIZE 10240
-#define THREAD_TIME_SLICE 5
-#define THREAD_PRI 25
+#define BUFSZ 1024
+#define THREAD_tcp_SIZE 10240
+#define THREAD_PRI  25
+#define THREAD_TIMSLICE 5
 
-#define POST_RESP_BUFSZ 1024
-#define POST_HEADER_BUFSZ 1024
+static const char sample_message[] = "你好";
 
-#define POST_LCTXHY "https://luckycola.com.cn/hunyuan/txhy"
+static rt_sem_t lock_recv_get = RT_NULL;
 
-static rt_thread_t gpt_thread = RT_NULL;
+// 线程
+static rt_thread_t tcp_thread = RT_NULL;
+static rt_thread_t chat_thread = RT_NULL;
+// 邮箱
+static rt_mailbox_t user = RT_NULL;
+static rt_mailbox_t ip_port = RT_NULL;
 
-/* send HTTP POST request by common request interface, it used to receive longer data */
-static int webclient_post_comm(const char *uri, const void *post_data, size_t data_len)
+typedef struct info
 {
-    struct webclient_session* session = RT_NULL;
-    unsigned char *buffer = RT_NULL;
-    int index, ret = 0;
-    int bytes_read, resp_status;
+    char info_uri[256]; // 调整为固定大小数组以避免指针问题
+    int info_port;
+} info, *info_t;
 
-    buffer = (unsigned char *) web_malloc(POST_RESP_BUFSZ);
-    if (buffer == RT_NULL)
-    {
-        rt_kprintf("no memory for receive response buffer.\n");
-        ret = -RT_ENOMEM;
-        goto __exit;
-    }
-
-    /* create webclient session and set header response size */
-    session = webclient_session_create(POST_HEADER_BUFSZ);
-    if (session == RT_NULL)
-    {
-        ret = -RT_ENOMEM;
-        goto __exit;
-    }
-
-    /* build header for upload */
-    webclient_header_fields_add(session, "Content-Length: %d\r\n", strlen(post_data));
-    webclient_header_fields_add(session, "Content-Type:application/json\r\n");
-
-    /* send POST request by default header */
-    if ((resp_status = webclient_post(session, uri, post_data, data_len)) != 200)
-    {
-        rt_kprintf("webclient POST request failed, response(%d) error.\n", resp_status);
-        ret = -RT_ERROR;
-        goto __exit;
-    }
-
-    rt_kprintf("webclient post response data: \n");
-    do
-    {
-        bytes_read = webclient_read(session, buffer, POST_RESP_BUFSZ);
-        if (bytes_read <= 0)
-        {
-            break;
-        }
-
-        for (index = 0; index < bytes_read; index++)
-        {
-            rt_kprintf("%c", buffer[index]);
-        }
-    } while (1);
-
-    rt_kprintf("\n");
-
-__exit:
-    if (session)
-    {
-        webclient_close(session);
-    }
-
-    if (buffer)
-    {
-        web_free(buffer);
-    }
-
-    return ret;
-}
-
-/* send HTTP POST request by simplify request interface, it used to received shorter data */
-static int webclient_post_smpl(const char *uri, const char *post_data, size_t data_len)
+static void gpt_tcpclient(void *params)
 {
-    char *response = RT_NULL;
-    char *header = RT_NULL;
-    size_t resp_len = 0;
-    int index = 0;
+    int ret;
+    char *recv_data;
+    struct hostent *host;
+    int sock, bytes_received;
+    struct sockaddr_in server_addr;
+    char *url;
+    int port;
+    info_t ip = (info_t)rt_malloc(sizeof(info));
 
-    webclient_request_header_add(&header, "Content-Length: %d\r\n", strlen(post_data));
-    webclient_request_header_add(&header, "Content-Type: application/octet-stream\r\n");
-
-    if (webclient_request(uri, header, post_data, data_len, (void **)&response, &resp_len) < 0)
+    // 创建信号量
+    if (lock_recv_get == NULL)
     {
-        rt_kprintf("webclient send post request failed.");
-        web_free(header);
-        return -RT_ERROR;
+        lock_recv_get = rt_sem_create("lock", 0, RT_IPC_FLAG_PRIO);
     }
 
-    rt_kprintf("webclient send post request by simplify request interface.\n");
-    rt_kprintf("webclient post response data: \n");
-    for (index = 0; index < resp_len; index++)
+    if (rt_mb_recv(ip_port, (rt_uint32_t)&ip, RT_WAITING_FOREVER) == RT_EOK)
     {
-        rt_kprintf("%c", response[index]);
-    }
-    rt_kprintf("\n");
-
-    if (header)
-    {
-        web_free(header);
+        url = ip->info_uri;
+        port = ip->info_port;
     }
 
-    if (response)
+    // 通过函数入口参数url获得host地址（如果是域名，会做域名解析）
+    host = gethostbyname(url);
+
+    // 分配用于存放接收数据的缓冲
+    recv_data = rt_malloc(BUFSZ);
+    if (recv_data == RT_NULL)
     {
-        web_free(response);
+        rt_kprintf("No memory\n");
+        return;
     }
 
-    return 0;
-}
-
-void gpt(void *param)
-{
-    char *uri = RT_NULL;
-    cJSON *send_data = RT_NULL;
-    char *str = RT_NULL;
-    send_data = init_lctxhy_json(APP_KEY, UID, "你好", ISLONG_YES);
-    str = cJSON_PrintUnformatted(send_data);
-    
-    uri = web_strdup(POST_LCTXHY);
-
-    webclient_post_comm(uri, str,rt_strlen(str));
-
-    /* 释放JSON数据 */
-    cJSON_Delete(send_data);
-    web_free(uri);
-    web_free(str);
-}
-
-void gpt_test()
-{
-    gpt_thread = rt_thread_create(
-        "gpt",
-        gpt,
-        RT_NULL,
-        THREAD_SIZE,
-        THREAD_PRI,
-        THREAD_TIME_SLICE
-    );
-
-    if (gpt_thread != RT_NULL)
+    // 创建一个socket，类型是SOCKET_STREAM，TCP类型
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-        rt_thread_startup(gpt_thread);
+        rt_kprintf("Socket error\n");
+        rt_free(recv_data);
+        return;
+    }
+
+    // 初始化预连接的服务端地址
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+    server_addr.sin_addr = *((struct in_addr *)host->h_addr);
+    rt_memset(&(server_addr.sin_zero), 0, sizeof(server_addr.sin_zero));
+
+    // 连接到服务端
+    if (connect(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1)
+    {
+        rt_kprintf("Connect fail!\n");
+        closesocket(sock);
+        rt_free(recv_data);
+        return;
     }
     else
     {
-        rt_kprintf("线程创建失败！\n");
+        rt_kprintf("Connect successful\n");
     }
+
+    while (1)
+    {
+        char *data;
+        rt_sem_take(lock_recv_get, RT_WAITING_FOREVER);
+
+        rt_mb_recv(user, (rt_uint32_t)&data, RT_WAITING_FOREVER);
+
+        // 发送数据到sock连接
+        ret = send(sock, data, strlen(data), 0);
+        if (ret < 0)
+        {
+            closesocket(sock);
+            rt_kprintf("\nsend error, close the socket.\r\n");
+            rt_free(recv_data);
+            break;
+        }
+        // 从sock连接中接收最大BUFSZ - 1字节数据
+        bytes_received = recv(sock, recv_data, BUFSZ - 1, 0);
+        if (bytes_received < 0)
+        {
+            closesocket(sock);
+            rt_kprintf("\nreceived error, close the socket.\r\n");
+            rt_free(recv_data);
+            break;
+        }
+        // 有接收到数据，把末端清零
+        recv_data[bytes_received] = '\0';
+
+        // 在控制终端显示收到的数据
+        rt_kprintf("\nReceived data = %s ", recv_data);
+    }
+    return;
 }
 
-MSH_CMD_EXPORT(gpt_test, 测试连接回答);
+void chat(int argc, char **argv)
+{
+    char *data = rt_malloc(strlen(argv[1]) + 1); // 动态分配内存存储参数
+    if (data == NULL)
+    {
+        rt_kprintf("No memory\n");
+        return;
+    }
+    rt_strcpy(data, argv[1]);
+    rt_mb_send(user, (rt_uint32_t)data);
+    rt_sem_release(lock_recv_get);
+}
+
+void chat_client(int argc, char **argv)
+{
+    info_t IpPort = rt_malloc(sizeof(info)); // 动态分配内存存储IP和端口信息
+    if (IpPort == NULL)
+    {
+        rt_kprintf("No memory\n");
+        return;
+    }
+
+    rt_strncpy(IpPort->info_uri, argv[1], sizeof(IpPort->info_uri) - 1);
+    IpPort->info_uri[sizeof(IpPort->info_uri) - 1] = '\0'; // 确保字符串以空字符结尾
+    IpPort->info_port = strtoul(argv[2],0,10);
+
+    if (user == RT_NULL)
+    {
+        user = rt_mb_create("user", 1024, RT_IPC_FLAG_FIFO);
+    }
+    if (ip_port == RT_NULL)
+    {
+        ip_port = rt_mb_create("ip_port", 128, RT_IPC_FLAG_FIFO);
+    }
+    if (tcp_thread == RT_NULL)
+    {
+        tcp_thread = rt_thread_create("tcp", gpt_tcpclient, RT_NULL, THREAD_tcp_SIZE, THREAD_PRI, THREAD_TIMSLICE);
+        rt_thread_startup(tcp_thread);
+    }
+
+    rt_mb_send(ip_port, (rt_uint32_t)IpPort);
+}
+
+MSH_CMD_EXPORT(chat_client, 设置ip 端口);
+MSH_CMD_EXPORT(chat, 交流);

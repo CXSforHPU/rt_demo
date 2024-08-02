@@ -90,7 +90,24 @@
 #define RT_USING_DFS_V1
 #define DFS_FILESYSTEMS_MAX 4
 #define DFS_FILESYSTEM_TYPES_MAX 4
+#define RT_USING_DFS_ELMFAT
+
+/* elm-chan's FatFs, Generic FAT Filesystem Module */
+
+#define RT_DFS_ELM_CODE_PAGE 437
+#define RT_DFS_ELM_WORD_ACCESS
+#define RT_DFS_ELM_USE_LFN_3
+#define RT_DFS_ELM_USE_LFN 3
+#define RT_DFS_ELM_LFN_UNICODE_0
+#define RT_DFS_ELM_LFN_UNICODE 0
+#define RT_DFS_ELM_MAX_LFN 255
+#define RT_DFS_ELM_DRIVES 2
+#define RT_DFS_ELM_MAX_SECTOR_SIZE 512
+#define RT_DFS_ELM_REENTRANT
+#define RT_DFS_ELM_MUTEX_TIMEOUT 3000
+/* end of elm-chan's FatFs, Generic FAT Filesystem Module */
 #define RT_USING_DFS_DEVFS
+#define RT_USING_DFS_ROMFS
 /* end of DFS: device virtual file system */
 
 /* Device Drivers */
@@ -108,6 +125,12 @@
 #define RT_USING_I2C_BITOPS
 #define RT_USING_PWM
 #define RT_USING_RTC
+#define RT_USING_SDIO
+#define RT_SDIO_STACK_SIZE 512
+#define RT_SDIO_THREAD_PRIORITY 15
+#define RT_MMCSD_STACK_SIZE 1024
+#define RT_MMCSD_THREAD_PREORITY 22
+#define RT_MMCSD_MAX_PARTITION 16
 #define RT_USING_SPI
 #define RT_USING_WIFI
 #define RT_WLAN_DEVICE_STA_NAME "wlan0"
@@ -183,7 +206,6 @@
 /* Docking with protocol stacks */
 
 #define SAL_USING_LWIP
-#define SAL_USING_TLS
 /* end of Docking with protocol stacks */
 #define SAL_USING_POSIX
 #define RT_USING_NETDEV
@@ -272,12 +294,6 @@
 
 /* IoT - internet of things */
 
-#define PKG_USING_WEBCLIENT
-#define WEBCLIENT_DEBUG
-#define WEBCLIENT_USING_SAMPLES
-#define WEBCLIENT_USING_MBED_TLS
-#define PKG_USING_WEBCLIENT_V220
-#define PKG_WEBCLIENT_VER_NUM 0x20200
 
 /* Wi-Fi */
 
@@ -329,29 +345,6 @@
 
 /* security packages */
 
-#define PKG_USING_MBEDTLS
-
-/* Select Root Certificate */
-
-#define PKG_USING_MBEDTLS_USE_ALL_CERTS
-#define PKG_USING_MBEDTLS_USER_CERTS
-#define PKG_USING_MBEDTLS_THAWTE_ROOT_CA
-#define PKG_USING_MBEDTLS_VERSIGN_PBULIC_ROOT_CA
-#define PKG_USING_MBEDTLS_VERSIGN_UNIVERSAL_ROOT_CA
-#define PKG_USING_MBEDTLS_GEOTRUST_ROOT_CA
-#define PKG_USING_MBEDTLS_DIGICERT_ROOT_CA
-#define PKG_USING_MBEDTLS_GODADDY_ROOT_CA
-#define PKG_USING_MBEDTLS_COMODOR_ROOT_CA
-#define PKG_USING_MBEDTLS_DST_ROOT_CA
-#define PKG_USING_MBEDTLS_CLOBALSIGN_ROOT_CA
-#define PKG_USING_MBEDTLS_ENTRUST_ROOT_CA
-#define PKG_USING_MBEDTLS_AMAZON_ROOT_CA
-#define PKG_USING_MBEDTLS_CERTUM_TRUSTED_NETWORK_ROOT_CA
-/* end of Select Root Certificate */
-#define MBEDTLS_AES_ROM_TABLES
-#define MBEDTLS_ECP_WINDOW_SIZE 2
-#define MBEDTLS_SSL_MAX_CONTENT_LEN 4096
-#define PKG_USING_MBEDTLS_V27102
 /* end of security packages */
 
 /* language packages */
@@ -419,6 +412,7 @@
 
 /* STM32 HAL & SDK Drivers */
 
+#define SDIO_MAX_FREQ 1000000
 /* end of STM32 HAL & SDK Drivers */
 
 /* Infineon HAL Packages */
@@ -455,9 +449,17 @@
 
 /* samples: kernel and components samples */
 
+#define PKG_USING_KERNEL_SAMPLES
+#define PKG_USING_KERNEL_SAMPLES_LATEST_VERSION
+#define PKG_USING_KERNEL_SAMPLES_EN
+#define KERNEL_SAMPLES_USING_MAILBOX
 #define PKG_USING_NETWORK_SAMPLES
 #define PKG_USING_NETWORK_SAMPLES_LATEST_VERSION
-#define NETWORK_SAMPLES_USING_HTTP_CLIENT
+#define NETWORK_SAMPLES_USING_TCP_CLIENT
+#define NETWORK_SAMPLES_USING_TCP_SERVER
+#define NETWORK_SAMPLES_USING_UDP_CLIENT
+#define NETWORK_SAMPLES_USING_UDP_SERVER
+#define NETWORK_SAMPLES_USING_TCP_CLIENT_SELECT
 /* end of samples: kernel and components samples */
 
 /* entertainment: terminal games and other interesting software packages */
@@ -518,6 +520,9 @@
 /* Onboard Peripheral Drivers */
 
 #define BSP_USING_USB_TO_USART
+#define BSP_USING_FS
+#define BSP_USING_SDCARD_FATFS
+#define BSP_USING_FS_AUTO_MOUNT
 #define BSP_USING_RW007_WLAN
 /* end of Onboard Peripheral Drivers */
 
@@ -530,6 +535,7 @@
 #define BSP_USING_SPI2
 #define BSP_USING_ONCHIP_RTC
 #define BSP_RTC_USING_LSE
+#define BSP_USING_SDIO
 /* end of On-chip Peripheral Drivers */
 
 /* Board extended module Drivers */

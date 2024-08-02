@@ -20,7 +20,7 @@
 #define GPIO_LED_R    GET_PIN(F, 12)
 int main(void)
 {
-    rt_pin_mode(GPIO_LED_R, PIN_MODE_OUTPUT);
+   rt_pin_mode(GPIO_LED_R, PIN_MODE_OUTPUT);
 
     while (1)
     {

@@ -925,7 +925,7 @@ int sal_send(int socket, const struct msghdr *message, int flags)
         return pf->skt_ops->sendmsg((int)(size_t)sock->user_data, message, flags);
     }
 #else
-    return pf->skt_ops->send((int)(size_t)sock->user_data, message, flags);
+    return pf->skt_ops->sendmsg((int)(size_t)sock->user_data, message, flags);
 #endif
 }
 

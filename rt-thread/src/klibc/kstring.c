@@ -44,7 +44,7 @@ rt_weak void *rt_memset(void *s, int c, rt_ubase_t count)
     char *xs = (char *)s;
 
     while (count--)
-        *xs++ = c;
+        *xs++ = c; 
 
     return s;
 #else

@@ -14,6 +14,17 @@
 #define UID         "NtoAW31702458883264reDjRnIakr"
 
 
+struct ip_port
+{
+    char *url;
+    int port;
+};
+
+
+
+
+
+
 cJSON * init_lctxhy_json(char* _APP_KEY,char* _UID,char* _ques,int _isLong);
 char* get_data_lctxhy(char* message);
 
