@@ -564,6 +564,7 @@ if __name__ == '__main__':
 
 
 * 参考[GPT-soVITS-Inference (yuque.com)](https://www.yuque.com/xter/zibxlp)
+* https://blog.csdn.net/Little_Carter/article/details/135904759
 
 
 
