@@ -573,9 +573,9 @@ if __name__ == '__main__':
 ## 附加百度网盘文件
 
 通过百度网盘分享的文件：AIGC.7z
-链接：https://pan.baidu.com/s/18me4ezUYOPsOdOa8RmPK_A?pwd=8o52 
-提取码：8o52 
---来自百度网盘超级会员V1的分享
+链接：https://pan.baidu.com/s/155qI1O1gWFjWndYCY2lznA?pwd=31xa 
+提取码：31xa 
+--来自百度网盘超级会员V2的分享
 ## 项目解说视频
 通过百度网盘分享的文件：项目解说视频.7z
 链接：https://pan.baidu.com/s/1jw5U0rncqRo1DRc2epkxww?pwd=aecq 
