@@ -4,11 +4,14 @@
 
 ## 本项目基于以下项目：
 
-* [GPT-soVITS-Inference (yuque.com)](https://www.yuque.com/xter/zibxlp)
+* [RVC-Boss/GPT-SoVITS: 1 min voice data can also be used to train a good TTS model! (few shot voice cloning) (github.com)](https://github.com/RVC-Boss/GPT-SoVITS)
 
 * [jianchang512/stt: Voice Recognition to Text Tool / 一个离线运行的本地语音识别转文字服务，输出json、srt字幕带时间戳、纯文字格式 (github.com)](https://github.com/jianchang512/stt)
+
 * cjson
+
 * webclient
+
 * 星火一号bsp
 
 * [LuckyCola](https://luckycola.com.cn/public/dist/#/)
@@ -78,14 +81,14 @@ if __name__ == '__main__':
 
 
 * 此文件提供了luckycola 中腾讯混元大模型的api接口方式 
-     * 并且提供三个接口
-          * make_send_json()
-            * 制作要发送的json数据包，返回类型为dict
-          * post()
-            * 发送json数据包
-            * reture 经过get_assitant解析过的数据
-          * get_assitant()
-            						* 解析返回json中的assitant
+  * 并且提供三个接口
+    * make_send_json()
+      * 制作要发送的json数据包，返回类型为dict
+    * post()
+      * 发送json数据包
+      * reture 经过get_assitant解析过的数据
+    * get_assitant()
+       *  解析返回json中的assitant
 
 
 
@@ -99,7 +102,6 @@ if __name__ == '__main__':
 #### web.py
 
 ```python
-
 # coding:utf-8
 
 from flask import Flask, render_template, request, redirect, url_for
@@ -142,7 +144,7 @@ if __name__ == '__main__':
 * 本脚本，意义在于创建一个web服务器，提供文件上传与下载，所上传的文件会根据板子的ip来在本地temp文件夹下面进行存放output.wav 与 input.wav。
 * v0.1.0仅仅使用了download。作为板子下载处理好的文字转语音的音频文件
 
-	* upload，留作以后音频交互使用
+  * upload，留作以后音频交互使用
 
 *** 注意***：此处使用5001端口，因为文字转语音需要使用5000端口。
 
@@ -268,11 +270,59 @@ if __name__ == '__main__':
 
 ***具体参考以下链接***
 
-* [GPT-soVITS-Inference (yuque.com)](https://www.yuque.com/xter/zibxlp)
+* 将训练好的音频模型放入 VGPT-SoVITS-v2-240807文件夹下面的trained文件夹下面
+* 将config里面的model_name修改为自己需要的模型名称
+* 启动config
 
-* 关于windows电脑
-  * 启动 GPT-SoVITS-Inferce-0 一键启动脚本 - 5号脚本
-  * 默认为本地5000端口
+```python
+import os
+import json
+
+model_path = "./GPT-SoVITS-v2-240807/trained/"
+model_name = "test" #修改此处可以选择模型
+
+def scan():
+    """
+    对其模型文件夹进行扫描,所拥有的模型
+    """
+    trained = {}
+    for i in os.listdir(model_path):
+        trained[i]={}
+        for j in os.listdir(os.path.join(model_path,i)):
+            if j.endswith(".json"):
+                trained[i]["json"] = os.path.abspath(os.path.join(model_path,i,j))
+            elif j.endswith(".pth"):
+                trained[i]["pth"] = os.path.abspath(os.path.join(model_path,i,j))
+            elif j.endswith("ckpt"):
+                trained[i]["ckpt"] = os.path.abspath(os.path.join(model_path,i,j))
+            elif j.endswith(".wav"):
+                trained[i]["wav"] = os.path.abspath(os.path.join(model_path,i,j))
+                trained[i]["str"] = j.split(".wav")[0]
+    return trained
+
+
+
+
+if __name__ == "__main__":
+
+    trained = scan()
+    config_qijingchun = trained.get(model_name)
+    for i,j in trained.items():
+        print(i,"\n",j)
+        print("*"*100)
+    if config_qijingchun:
+        os.chdir("./GPT-SoVITS-v2-240807")
+        wav = config_qijingchun.get("wav")
+        strs = config_qijingchun.get("str")
+        port =5000
+        ip = "0.0.0.0"
+        ckpt = config_qijingchun.get("ckpt")
+        pt = config_qijingchun.get("pth")
+        text = f".\\runtime\\python.exe .\\api.py -dr {wav} -dt {strs} -a {ip} -p {port} -s {pt} -g {ckpt} -dl zh"
+        os.system(text)
+```
+
+
 
 #### 关于语音转文字
 
@@ -328,7 +378,7 @@ if __name__ == '__main__':
 * [rt-thread.org/download.html#download-rt-thread-env-tool](https://www.rt-thread.org/download.html#download-rt-thread-env-tool)
 * 下载OpenOCD
 
-	* 下载stlink
+  * 下载stlink
 
 
 
@@ -466,7 +516,7 @@ def text_to_speech(text,path):
     url = urllib.parse.quote(text)
 
     wav = requests.get(
-        f'http://127.0.0.1:5000/tts?character=胡桃&text={url}')
+        f'http://127.0.0.1:5000?text={url}&text_language=zh')
 
     wav = wav.content
     with open(path, 'wb') as fp:
@@ -563,20 +613,23 @@ if __name__ == '__main__':
 
 
 
-* 参考[GPT-soVITS-Inference (yuque.com)](https://www.yuque.com/xter/zibxlp)
-* https://blog.csdn.net/Little_Carter/article/details/135904759
-
-
+* [RT-Thread 夏令营：AIGC 自定义训练音频模型以及导入 06_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1TJeEekETo/?vd_source=e1ed59d2289fbb8b9d8a094b657fd130)
 
 
 
 ## 附加百度网盘文件
 
+里面包括了训练环境，压缩包大小18g左右 不需要进行额外下载模型文件
+
+
+
 通过百度网盘分享的文件：AIGC.7z
 链接：https://pan.baidu.com/s/155qI1O1gWFjWndYCY2lznA?pwd=31xa 
 提取码：31xa 
 --来自百度网盘超级会员V2的分享
+
 ## 项目解说视频
+
 通过百度网盘分享的文件：项目解说视频.7z
 链接：https://pan.baidu.com/s/1jw5U0rncqRo1DRc2epkxww?pwd=aecq 
 提取码：aecq 
